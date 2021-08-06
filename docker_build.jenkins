@@ -15,7 +15,7 @@ pipeline {
             steps {
                 echo " ============== startuem =================="
                 dir ('.') {
-                	sh 'ansible-playbook playbool.yml'
+                	sh 'ansible-playbook playbook.yml'
                     sh 'ls -l'
                 }
             }
