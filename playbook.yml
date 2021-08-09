@@ -46,11 +46,6 @@
     #notify: Start docker on boot
     tags:
       - docker
-  - name: Install docker-compose
-    get_url: 
-      url : https://github.com/docker/compose/releases/download/1.25.1-rc1/docker-compose-Linux-x86_64
-      dest: /usr/local/bin/docker-compose
-      mode: 'u+x,g+x'
   - name: Copy Dockerfile
     copy:
       src: ./Dockerfile
@@ -65,6 +60,21 @@
       owner: root
       group: root
       mode: '0644'
-  - name: zapusk docker     
-    command: "docker run --name=test -p 1234:80 -d devopser/testcicd:latest"
-
+  - name: Get info on docker host and list images
+    docker_host_info:
+     containers: yes
+    register: result
+  - name: Stop all containers
+    shell: "docker container stop $(docker container ls -aq)"
+    when: result.host_info.Containers != 0
+  - name: Remove all containers
+    shell: "docker container rm $(docker container ls -aq)"
+    when: result.host_info.Containers != 0
+  - name: Remove all images
+    shell: "docker rmi $(docker images -a -q)"
+    ignore_errors: yes
+    when: result.host_info.Containers != 0
+  - name: build docker
+    shell: "docker build -t devopser/testcicd:latest /home/"
+  - name: run
+    shell: "docker run --name=test -p 1234:80 -d devopser/testcicd:latest"
